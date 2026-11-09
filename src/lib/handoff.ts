@@ -1,3 +1,5 @@
+import { translate } from "./translations.ts";
+import type { Language } from "./translations.ts";
 export const shifts = ["Matutino", "Vespertino", "Nocturno"] as const;
 export type Shift = (typeof shifts)[number];
 export type Incident = {
@@ -25,9 +27,34 @@ export function getStatus(incidents: Incident[]) {
       ? "Seguimiento pendiente"
       : "Operación estable";
 }
-export function buildSummary(draft: ShiftDocument) {
+export function buildSummary(draft: ShiftDocument, lang: Language = "es") {
   const pending = draft.incidents.filter((i) => i.status !== "Resuelta");
   const count = draft.incidents.length;
+  if (lang === "en") {
+    const t = (value: string) => translate(value, lang);
+    return `SHIFT HANDOFF · ${t(draft.area)}
+Shift: ${t(draft.shift)}
+Handed over by: ${draft.author.trim() || "Not provided"}
+Status: ${t(getStatus(draft.incidents))}
+
+${count === 1 ? "1 incident was recorded." : `${count} incidents were recorded.`} ${pending.length} ${pending.length === 1 ? "incident" : "incidents"} pending follow-up.
+
+${
+  draft.incidents
+    .map(
+      (
+        i,
+        index,
+      ) => `${index + 1}. ${i.id.startsWith("demo-") ? t(i.title) : i.title}
+   ${t(i.status)} · ${t("Prioridad")} ${t(i.priority).toLowerCase()}${i.blocked && i.status !== "Resuelta" ? " · BLOCKED" : ""}
+   Owner: ${(i.id.startsWith("demo-") ? t(i.owner.trim()) : i.owner.trim()) || "Unassigned"}`,
+    )
+    .join("\n\n") || "No incidents recorded."
+}
+
+Next action: ${t(draft.nextAction.trim()) || "Not provided"}`;
+  }
+
   return `ENTREGA DE TURNO · ${draft.area}\nTurno: ${draft.shift}\nEntrega: ${draft.author.trim() || "Sin indicar"}\nEstado: ${getStatus(draft.incidents)}\n\nSe ${count === 1 ? "registró 1 incidencia" : `registraron ${count} incidencias`}. ${pending.length} ${pending.length === 1 ? "pendiente" : "pendientes"} para seguimiento.\n\n${draft.incidents.map((i, index) => `${index + 1}. ${i.title}\n   ${i.status} · Prioridad ${i.priority.toLowerCase()}${i.blocked && i.status !== "Resuelta" ? " · BLOQUEADA" : ""}\n   Responsable: ${i.owner.trim() || "Por asignar"}`).join("\n\n") || "Sin incidencias registradas."}\n\nSiguiente acción: ${draft.nextAction.trim() || "Sin indicar"}`;
 }
 export function validateHandoff(draft: ShiftDocument) {

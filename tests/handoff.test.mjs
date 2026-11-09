@@ -52,3 +52,21 @@ test("el resumen usa singular y el cierre exige responsable y siguiente acción"
   assert.equal(isWorkspace({ draft, history: [] }), true);
   assert.equal(isWorkspace({ draft: {}, history: [] }), false);
 });
+
+test("English handoffs translate labels and preserve user-entered details", () => {
+  const data = {
+    ...draft,
+    nextAction: "Mi siguiente acción",
+    incidents: [
+      { ...incident, id: "user-1", title: "Mi incidencia", owner: "Mi equipo" },
+    ],
+  };
+  const before = JSON.stringify(data);
+  const summary = buildSummary(data, "en");
+  assert.match(summary, /SHIFT HANDOFF/);
+  assert.match(summary, /Shift: Night/);
+  assert.match(summary, /Mi incidencia/);
+  assert.match(summary, /Mi equipo/);
+  assert.match(summary, /Next action: Mi siguiente acción/);
+  assert.equal(JSON.stringify(data), before);
+});

@@ -98,3 +98,8 @@ Jesus Armando Gutierrez Nery
 Cada incidencia tiene responsable, prioridad, estado y señal de bloqueo. El cierre conserva un resumen inmutable en el historial y abre el siguiente turno con las incidencias pendientes; las resueltas no se transfieren. La operación y el resumen excluyen bloqueos resueltos. El borrador y el historial persisten en este navegador. La demo inicial contiene dos incidencias de ejemplo.
 
 La copia del resumen informa el resultado y ofrece selección manual si falla el portapapeles. No hay backend ni sincronización entre usuarios. Comprueba la lógica de estados, transferencia y singular/plural con `npm run test` (Node.js 22 o posterior), y ejecuta `npm run build` y `npm run lint`.
+
+
+## Idiomas
+
+La interfaz admite español e inglés mediante el selector ES / EN. La preferencia se guarda en este navegador y también puede definirse al abrir `?lang=es` o `?lang=en`. Cambiar el idioma conserva los datos de los formularios y los filtros activos. Las etiquetas, validaciones y salidas generadas se adaptan al idioma; los textos libres escritos por el usuario se conservan.

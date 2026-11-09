@@ -1,3 +1,4 @@
+import { useLanguage } from "./lib/locale";
 import { useState } from "react";
 import {
   buildSummary,
@@ -52,6 +53,7 @@ const emptyIncident = {
   blocked: false,
 };
 export default function App() {
+  const { t, lang, locale, setLanguage } = useLanguage();
   const [workspace, setWorkspace] = useState(load);
   const [newIncident, setNewIncident] = useState(emptyIncident);
   const [notice, setNotice] = useState("");
@@ -60,7 +62,7 @@ export default function App() {
   const draft = workspace.draft;
   const pending = draft.incidents.filter((i) => i.status !== "Resuelta");
   const blocked = pending.filter((i) => i.blocked).length;
-  const summary = buildSummary(draft);
+  const summary = buildSummary(draft, lang);
   function persist(next: Workspace) {
     setWorkspace(next);
     try {
@@ -147,39 +149,47 @@ export default function App() {
           <span>sn</span>ShiftNote
         </a>
         <span className="local-label">
-          ESPACIO DE DEMOSTRACIÓN · GUARDADO LOCAL
+          {t("ESPACIO DE DEMOSTRACIÓN · GUARDADO LOCAL")}{" "}
         </span>
+        <button
+          className="language-toggle"
+          type="button"
+          onClick={() => setLanguage(lang === "es" ? "en" : "es")}
+          aria-label={lang === "es" ? "Switch to English" : "Cambiar a español"}
+        >
+          {lang === "es" ? "EN" : "ES"}
+        </button>
         <a
           href="https://github.com/arpwn/shiftnote"
           target="_blank"
           rel="noreferrer"
         >
-          Código ↗
+          {t("Código ↗")}{" "}
         </a>
       </header>
       <main id="main" className="container">
         <div className="heading">
           <div>
-            <p className="eyebrow">CONTINUIDAD OPERATIVA</p>
+            <p className="eyebrow">{t("CONTINUIDAD OPERATIVA")}</p>
             <h1>
-              El turno cambia.
-              <br />
-              <span>El contexto se queda.</span>
+              {t("El turno cambia.")} <br />
+              <span>{t("El contexto se queda.")}</span>
             </h1>
             <p>
-              Incidencias, responsables y próximos pasos para el equipo que
-              sigue.
+              {t(
+                "Incidencias, responsables y próximos pasos para el equipo que sigue.",
+              )}{" "}
             </p>
           </div>
           <div
             className={`operation-state ${getStatus(draft.incidents) === "Atención requerida" ? "attention" : ""}`}
           >
-            <span>●</span> {getStatus(draft.incidents)}
+            <span>●</span> {t(getStatus(draft.incidents))}
           </div>
         </div>
-        <section className="shift-bar" aria-label="Datos del turno">
+        <section className="shift-bar" aria-label={t("Datos del turno")}>
           <div>
-            <label htmlFor="area">Área</label>
+            <label htmlFor="area">{t("Área")}</label>
             <select
               id="area"
               value={draft.area}
@@ -187,39 +197,45 @@ export default function App() {
             >
               {["Farmacia", "Sistemas", "Compras", "Atención al cliente"].map(
                 (a) => (
-                  <option key={a}>{a}</option>
+                  <option key={a} value={a}>
+                    {t(a)}
+                  </option>
                 ),
               )}
             </select>
           </div>
           <div>
-            <label htmlFor="shift">Turno</label>
+            <label htmlFor="shift">{t("Turno")}</label>
             <select
               id="shift"
               value={draft.shift}
               onChange={(e) => updateDraft({ shift: e.target.value as Shift })}
             >
               {shifts.map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>
+                  {t(s)}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label htmlFor="author">Quién entrega</label>
+            <label htmlFor="author">{t("Quién entrega")}</label>
             <input
               id="author"
               maxLength={80}
-              placeholder="Tu nombre o equipo"
+              placeholder={t("Tu nombre o equipo")}
               value={draft.author}
               onChange={(e) => updateDraft({ author: e.target.value })}
             />
           </div>
           <div className="turn-metrics">
             <span>
-              <strong>{pending.length}</strong> {pending.length === 1 ? "pendiente" : "pendientes"}
+              <strong>{pending.length}</strong>{" "}
+              {pending.length === 1 ? t("pendiente") : t("pendientes")}
             </span>
             <span>
-              <strong>{blocked}</strong> {blocked === 1 ? "bloqueo" : "bloqueos"}
+              <strong>{blocked}</strong>{" "}
+              {blocked === 1 ? t("bloqueo") : t("bloqueos")}
             </span>
           </div>
         </section>
@@ -228,11 +244,11 @@ export default function App() {
             <section className="panel incidents-panel">
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">01 / SEGUIMIENTO</p>
-                  <h2>Lo que necesita atención</h2>
+                  <p className="eyebrow">{t("01 / SEGUIMIENTO")}</p>
+                  <h2>{t("Lo que necesita atención")}</h2>
                 </div>
                 <label className="sr-only" htmlFor="filter">
-                  Filtrar incidencias
+                  {t("Filtrar incidencias")}{" "}
                 </label>
                 <select
                   id="filter"
@@ -241,13 +257,16 @@ export default function App() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
                   {["Todas", "Abierta", "En curso", "Resuelta"].map((s) => (
-                    <option key={s}>{s}</option>
+                    <option key={s} value={s}>
+                      {t(s)}
+                    </option>
                   ))}
                 </select>
               </div>
               <p className="muted">
-                Empieza con dos incidencias de ejemplo. Edita sus responsables y
-                estados o añade las tuyas.
+                {t(
+                  "Empieza con dos incidencias de ejemplo. Edita sus responsables y estados o añade las tuyas.",
+                )}{" "}
               </p>
               <div className="incidents">
                 {draft.incidents
@@ -264,32 +283,40 @@ export default function App() {
                         <span
                           className={`priority ${i.priority.toLowerCase()}`}
                         >
-                          {i.priority}
+                          {t(i.priority)}
                         </span>
                         {i.blocked && i.status !== "Resuelta" && (
-                          <span className="blocked-label">Bloqueada</span>
+                          <span className="blocked-label">
+                            {t("Bloqueada")}
+                          </span>
                         )}
                         <span className="incident-id">
                           #{draft.incidents.indexOf(i) + 1}
                         </span>
                       </div>
-                      <h3>{i.title}</h3>
+                      <h3>{i.id.startsWith("demo-") ? t(i.title) : i.title}</h3>
                       <div className="incident-fields">
                         <label>
-                          Responsable
+                          {t("Responsable")}{" "}
                           <input
-                            aria-label={`Responsable de ${i.title}`}
+                            aria-label={t("Responsable de {0}", [
+                              i.id.startsWith("demo-") ? t(i.title) : i.title,
+                            ])}
                             maxLength={80}
-                            value={i.owner}
+                            value={
+                              i.id.startsWith("demo-") ? t(i.owner) : i.owner
+                            }
                             onChange={(e) =>
                               updateIncident(i.id, { owner: e.target.value })
                             }
                           />
                         </label>
                         <label>
-                          Estado
+                          {t("Estado")}{" "}
                           <select
-                            aria-label={`Estado de ${i.title}`}
+                            aria-label={t("Estado de {0}", [
+                              i.id.startsWith("demo-") ? t(i.title) : i.title,
+                            ])}
                             value={i.status}
                             onChange={(e) =>
                               updateIncident(i.id, {
@@ -298,7 +325,9 @@ export default function App() {
                             }
                           >
                             {["Abierta", "En curso", "Resuelta"].map((s) => (
-                              <option key={s}>{s}</option>
+                              <option key={s} value={s}>
+                                {t(s)}
+                              </option>
                             ))}
                           </select>
                         </label>
@@ -312,37 +341,39 @@ export default function App() {
                             updateIncident(i.id, { blocked: e.target.checked })
                           }
                         />{" "}
-                        Tiene un bloqueo activo
+                        {t("Tiene un bloqueo activo")}{" "}
                       </label>
                     </article>
                   ))}
                 {!draft.incidents.some(
                   (i) => statusFilter === "Todas" || i.status === statusFilter,
                 ) && (
-                  <p className="empty">No hay incidencias en este estado.</p>
+                  <p className="empty">
+                    {t("No hay incidencias en este estado.")}
+                  </p>
                 )}
               </div>
               <details className="add-incident" open>
-                <summary>＋ Añadir incidencia</summary>
+                <summary>{t("＋ Añadir incidencia")}</summary>
                 <form onSubmit={addIncident}>
-                  <label htmlFor="incident-title">Qué pasó</label>
+                  <label htmlFor="incident-title">{t("Qué pasó")}</label>
                   <input
                     id="incident-title"
                     value={newIncident.title}
                     maxLength={160}
-                    placeholder="Describe la incidencia"
+                    placeholder={t("Describe la incidencia")}
                     onChange={(e) =>
                       setNewIncident({ ...newIncident, title: e.target.value })
                     }
                   />
                   <div className="incident-fields">
                     <div>
-                      <label htmlFor="incident-owner">Responsable</label>
+                      <label htmlFor="incident-owner">{t("Responsable")}</label>
                       <input
                         id="incident-owner"
                         maxLength={80}
                         value={newIncident.owner}
-                        placeholder="Nombre o equipo"
+                        placeholder={t("Nombre o equipo")}
                         onChange={(e) =>
                           setNewIncident({
                             ...newIncident,
@@ -352,7 +383,9 @@ export default function App() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="incident-priority">Prioridad</label>
+                      <label htmlFor="incident-priority">
+                        {t("Prioridad")}
+                      </label>
                       <select
                         id="incident-priority"
                         value={newIncident.priority}
@@ -364,7 +397,9 @@ export default function App() {
                         }
                       >
                         {["Baja", "Media", "Alta"].map((s) => (
-                          <option key={s}>{s}</option>
+                          <option key={s} value={s}>
+                            {t(s)}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -380,64 +415,67 @@ export default function App() {
                         })
                       }
                     />{" "}
-                    Hay un bloqueo activo
+                    {t("Hay un bloqueo activo")}{" "}
                   </label>
                   <button className="secondary" type="submit">
-                    Añadir al turno ↗
+                    {t("Añadir al turno ↗")}{" "}
                   </button>
                 </form>
               </details>
             </section>
             <section className="panel history">
-              <p className="eyebrow">HISTORIAL LOCAL</p>
+              <p className="eyebrow">{t("HISTORIAL LOCAL")}</p>
               <h2>
-                Turnos entregados{" "}
+                {t("Turnos entregados")}{" "}
                 <span className="muted">{workspace.history.length}</span>
               </h2>
               {!workspace.history.length && (
                 <p className="muted">
-                  Al cerrar un turno, aquí quedará su resumen y el equipo
-                  entrante recibirá los pendientes.
+                  {t(
+                    "Al cerrar un turno, aquí quedará su resumen y el equipo entrante recibirá los pendientes.",
+                  )}{" "}
                 </p>
               )}
               {workspace.history.map((h) => (
                 <details key={h.id}>
                   <summary>
-                    {h.area} · {h.shift}
+                    {t(h.area)} · {t(h.shift)}
                     <span>
-                      {new Date(h.closedAt).toLocaleString("es-MX", {
+                      {new Date(h.closedAt).toLocaleString(locale, {
                         dateStyle: "short",
                         timeStyle: "short",
                       })}
                     </span>
                   </summary>
-                  <pre>{buildSummary(h)}</pre>
+                  <pre>{buildSummary(h, lang)}</pre>
                 </details>
               ))}
             </section>
           </div>
           <aside className="panel handoff">
-            <p className="eyebrow">02 / ENTREGA</p>
-            <h2>Para el siguiente equipo</h2>
+            <p className="eyebrow">{t("02 / ENTREGA")}</p>
+            <h2>{t("Para el siguiente equipo")}</h2>
             <p className="muted">
-              Solo las incidencias abiertas y en curso pasan al siguiente turno.
+              {t(
+                "Solo las incidencias abiertas y en curso pasan al siguiente turno.",
+              )}{" "}
             </p>
-            <label htmlFor="next-action">Siguiente acción</label>
+            <label htmlFor="next-action">{t("Siguiente acción")}</label>
             <textarea
               id="next-action"
               rows={3}
               maxLength={1000}
-              value={draft.nextAction}
+              value={t(draft.nextAction)}
               onChange={(e) => updateDraft({ nextAction: e.target.value })}
             />
             <div className="preview-heading">
-              <h3>Resumen del turno</h3>
+              <h3>{t("Resumen del turno")}</h3>
               <button className="text-button" onClick={copySummary}>
-                Copiar resumen ↗
+                {t("Copiar resumen ↗")}{" "}
               </button>
             </div>
             <label className="sr-only" htmlFor="summary">
-              Resumen para copiar
+              {t("Resumen para copiar")}{" "}
             </label>
             <textarea
               id="summary"
@@ -447,21 +485,24 @@ export default function App() {
               value={summary}
             />
             <button className="primary" onClick={closeShift}>
-              Cerrar turno y pasar pendientes <span>→</span>
+              {t("Cerrar turno y pasar pendientes")} <span>→</span>
             </button>
             <p className="muted small">
-              Guarda esta entrega en el historial y abre el siguiente turno.
+              {t(
+                "Guarda esta entrega en el historial y abre el siguiente turno.",
+              )}{" "}
             </p>
           </aside>
         </div>
         <p className="error" role="alert">
-          {error}
+          {t(error)}
         </p>
         <p className="notice" role="status">
-          {notice}
+          {t(notice)}
         </p>
         <footer>
-          ShiftNote <span>Continuidad entre turnos · React + TypeScript</span>
+          ShiftNote{" "}
+          <span>{t("Continuidad entre turnos · React + TypeScript")}</span>
         </footer>
       </main>
     </div>
